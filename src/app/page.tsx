@@ -1,19 +1,32 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Canvas from '@/components/Canvas';
 import LayerControls from '@/components/LayerControls';
 import IconPicker from '@/components/IconPicker';
 import ExportButton from '@/components/ExportButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ProjectManager } from '@/components/ProjectManager';
 import { Button } from '@/components/ui/button';
 import { Layer } from '@/types/layer';
 import { FilePlus2, Github } from 'lucide-react';
+import { 
+  Project, 
+  saveProject, 
+  migrateLegacyProject, 
+  getLastProjectId, 
+  getProjects 
+} from '@/lib/storage';
 
 export default function Home() {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [currentProject, setCurrentProject] = useState<{ id: string, name: string }>({ 
+      id: crypto.randomUUID(), 
+      name: 'Untitled Project' 
+  });
 
   const createInitialLayer = (): Layer => ({
     id: crypto.randomUUID(),
@@ -29,31 +42,74 @@ export default function Home() {
 
   // Load from local storage
   useEffect(() => {
-      const saved = localStorage.getItem('mvp-layers');
-      if (saved) {
-          try {
-              const parsed = JSON.parse(saved);
-              // eslint-disable-next-line
-              setLayers(parsed);
-              if (parsed.length > 0) setSelectedLayerId(parsed[parsed.length - 1].id);
-          } catch(e) { 
-              console.error("Failed to load layers", e);
+    // Wrap in setTimeout to avoid "setState synchronously within an effect" warning
+    const timer = setTimeout(() => {
+      // 1. Try migrating legacy
+      migrateLegacyProject();
+
+      // 2. Check for last project
+      const lastId = getLastProjectId();
+      const allProjects = getProjects();
+      
+      let loaded = false;
+      if (lastId) {
+          const found = allProjects.find(p => p.id === lastId);
+          if (found) {
+              setLayers(found.layers);
+              setCurrentProject({ id: found.id, name: found.name });
+              if (found.layers.length > 0) setSelectedLayerId(found.layers[found.layers.length - 1].id);
+              loaded = true;
           }
-      } else {
-        const initialLayer = createInitialLayer();
-        setLayers([initialLayer]);
-        setSelectedLayerId(initialLayer.id);
+      } 
+      
+      // 3. Fallback to first project or new
+      if (!loaded) {
+          if (allProjects.length > 0) {
+              const first = allProjects[0];
+              setLayers(first.layers);
+              setCurrentProject({ id: first.id, name: first.name });
+              if (first.layers.length > 0) setSelectedLayerId(first.layers[first.layers.length - 1].id);
+          } else {
+              const initialLayer = createInitialLayer();
+              setLayers([initialLayer]);
+              setSelectedLayerId(initialLayer.id);
+              // We don't save yet, wait for change
+          }
       }
       setHasLoaded(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Save to local storage
+  // Save to local storage (Auto-save)
   useEffect(() => {
       if (hasLoaded) {
-          localStorage.setItem('mvp-layers', JSON.stringify(layers));
+          saveProject({
+              id: currentProject.id,
+              name: currentProject.name,
+              updatedAt: Date.now(),
+              layers
+          });
       }
-  }, [layers, hasLoaded]);
+  }, [layers, hasLoaded, currentProject]);
 
+  const handleLoadProject = (project: Project) => {
+      setLayers(project.layers);
+      setCurrentProject({ id: project.id, name: project.name });
+      if (project.layers.length > 0) setSelectedLayerId(project.layers[project.layers.length - 1].id);
+  };
+
+  const handleRenameProject = (name: string) => {
+      setCurrentProject(prev => ({ ...prev, name }));
+  };
+
+  const handleNewSvg = () => {
+    const initialLayer = createInitialLayer();
+    const newId = crypto.randomUUID();
+    setLayers([initialLayer]);
+    setSelectedLayerId(initialLayer.id);
+    setCurrentProject({ id: newId, name: 'Untitled Project' });
+  };
 
   const addLayer = (iconId: string) => {
     const newLayer: Layer = {
@@ -124,25 +180,26 @@ export default function Home() {
 
   const selectedLayer = layers.find(l => l.id === selectedLayerId);
 
-  const handleNewSvg = () => {
-    const initialLayer = createInitialLayer();
-    setLayers([initialLayer]);
-    setSelectedLayerId(initialLayer.id);
-  };
-
   if (!hasLoaded) return null; // Avoid hydration mismatch
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground font-sans">
       <header className="flex justify-between items-center px-6 py-4 border-b border-border">
         <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center text-background font-bold">M</div>
-            <h1 className="font-bold text-xl tracking-tight">Modular Vector Playground</h1>
+            <h1 className="font-serif text-lg tracking-tight flex flex-col leading-none">
+              <span>M<span className="opacity-50 font-sans">odular</span></span>
+              <span>V<span className="opacity-50 font-sans">ector</span></span>
+              <span>P<span className="opacity-50 font-sans">layground</span></span>
+            </h1>
         </div>
         <div className="flex gap-2 items-center">
-             <a href="https://github.com" target="_blank" className="text-muted-foreground hover:text-foreground">
-                <Github size={20} />
-             </a>
+             <ProjectManager 
+                currentProjectId={currentProject.id}
+                currentProjectName={currentProject.name}
+                onLoadProject={handleLoadProject}
+                onRenameProject={handleRenameProject}
+                onNewProject={handleNewSvg}
+             />
              <ThemeToggle />
              <Button variant="outline" size="sm" onClick={handleNewSvg} className="gap-2">
                <FilePlus2 size={16} />
@@ -208,6 +265,42 @@ export default function Home() {
           </div>
         </aside>
       </main>
+
+      <footer className="border-t border-border p-4 bg-background">
+        <div className="flex flex-row justify-center items-center gap-2 md:gap-6 text-center text-muted-foreground">
+            <p className="text-sm opacity-80 hover:opacity-100 transition-opacity">
+                <span className="md:hidden">©</span>
+                <span className="hidden md:inline">Copyright © {new Date().getFullYear()} Modular Vector Playground</span>
+            </p>
+            <span className="hidden md:inline opacity-80">|</span>
+            <p className="hidden md:block text-sm opacity-80 hover:opacity-100 transition-opacity">
+                All rights reserved
+            </p>
+            <span className="hidden md:inline opacity-80">|</span>
+            <div className="flex flex-row gap-2 items-center">
+                <span className="hidden md:inline text-sm opacity-80 hover:opacity-100 transition-opacity">Built by</span>
+                <a
+                    href="https://benjamin.dev"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-opacity hover:opacity-100 flex items-center gap-2"
+                    aria-label="Built by benjamin.dev"
+                >
+                    <Image
+                        src="/benjamin.webp"
+                        alt="benjamin.dev"
+                        width={20}
+                        height={20}
+                        className="h-5 w-5 rounded-full object-cover"
+                    />
+                </a>
+            </div>
+            <span className="hidden md:inline opacity-80">|</span>
+            <a href="https://github.com/benjamindotdev/mvp" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground opacity-80 hover:opacity-100 transition-opacity">
+                <Github size={20} />
+            </a>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -23,6 +23,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
                             value={value}
                             onChange={(e) => onChange(e.target.value)}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            title="Choose custom color"
                         />
                         <div 
                             className="w-full h-full rounded border border-border" 
