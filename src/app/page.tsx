@@ -192,6 +192,7 @@ export default function Home() {
               <span>P<span className="opacity-50 font-sans">layground</span></span>
             </h1>
         </div>
+        
         <div className="flex gap-2 items-center">
              <ProjectManager 
                 currentProjectId={currentProject.id}
@@ -294,7 +295,23 @@ export default function Home() {
                         className="h-5 w-5 rounded-full object-cover"
                     />
                 </a>
-            </div>
+                <span className="hidden md:inline text-sm opacity-80 hover:opacity-100 transition-opacity">with</span>
+                <a
+                    href='https://lucide.dev'
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-opacity hover:opacity-100 flex items-center gap-2"
+                    aria-label="Using Lucide Icons"
+                >
+                    <Image
+                        src="/lucide.svg"
+                        alt="Lucide Icons"
+                            width={20}
+                            height={20}
+                        className="h-5 w-5 dark:text-zinc-800"
+                    />
+                </a>
+                </div>
             <span className="hidden md:inline opacity-80">|</span>
             <a href="https://github.com/benjamindotdev/mvp" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground opacity-80 hover:opacity-100 transition-opacity">
                 <Github size={20} />
