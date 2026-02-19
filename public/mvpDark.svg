@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+      <g transform="translate(256 256) rotate(0) scale(10) translate(-12 -12)" opacity="1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(98.4% 0.003 247.858)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+      </g>
+    
+      <g transform="translate(88 235) rotate(0) scale(6.4) translate(-12 -12)" opacity="1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(98.4% 0.003 247.858)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-column" aria-hidden="true"><path d="M5 21v-6"></path><path d="M12 21V3"></path><path d="M19 21V9"></path></svg>
+      </g>
+    
+      <g transform="translate(418 239) rotate(0) scale(5.7) translate(-12 -12)" opacity="1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(98.5% 0.002 247.839)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-parking" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9 17V7h4a3 3 0 0 1 0 6H9"></path></svg>
+      </g>
+    
+</svg>

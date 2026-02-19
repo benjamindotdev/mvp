@@ -16,3 +16,5 @@
 - [x] Launch the Project
 
 - [x] Ensure Documentation is Complete
+
+- [x] Add Testing Suite

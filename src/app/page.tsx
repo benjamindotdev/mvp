@@ -10,7 +10,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { ProjectManager } from '@/components/ProjectManager';
 import { Button } from '@/components/ui/button';
 import { Layer } from '@/types/layer';
-import { FilePlus2, Github } from 'lucide-react';
+import { FilePlus2, Github, CircleParking, LucideChartNoAxesColumn, LucideChevronDown } from 'lucide-react';
 import { 
   Project, 
   saveProject, 
@@ -187,9 +187,9 @@ export default function Home() {
       <header className="flex justify-between items-center px-6 py-4 border-b border-border">
         <div className="flex items-center gap-2">
             <h1 className="font-serif text-lg tracking-tight flex flex-col leading-none">
-              <span>M<span className="opacity-50 font-sans">odular</span></span>
-              <span>V<span className="opacity-50 font-sans">ector</span></span>
-              <span>P<span className="opacity-50 font-sans">layground</span></span>
+              <span className='flex items-end'><LucideChartNoAxesColumn /><span className="opacity-50 font-sans">odular</span></span>
+              <span className='flex items-end'><LucideChevronDown /><span className="opacity-50 font-sans">ector</span></span>
+              <span className='flex items-end'><CircleParking /><span className="opacity-50 font-sans">layground</span></span>
             </h1>
         </div>
         
